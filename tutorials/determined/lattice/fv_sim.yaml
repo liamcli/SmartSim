@@ -1,0 +1,24 @@
+name: lattice_fv_sim
+entrypoint: python3 fv_sim.py
+environment:
+  image: liamdetermined/development:smartsim
+  force_pull_image: true
+hyperparameters:
+  chief_ip: localhost:6780
+  steps: 3000
+  x_res: 400
+  y_res: 100
+  rho0: 100
+  tau: 0.6
+  seed: 42
+resources:
+  slots_per_trial: 1
+# Use the single-searcher to run just one instance of the training script
+searcher:
+  name: single
+  # metric is required but it shouldn't hurt to ignore it at this point.
+  metric: x
+  # max_length is ignored if the training script ignores it.
+  max_length: 1
+
+max_restarts: 0

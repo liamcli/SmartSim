@@ -1,0 +1,4 @@
+environment:
+  image: liamdetermined/development:smartsim
+resources:
+  slots: 0
