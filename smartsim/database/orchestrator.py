@@ -278,14 +278,18 @@ class Orchestrator(EntityList):
         :return: path to module or "" if not found
         :rtype: str
         """
-        module = ["--loadmodule", CONFIG.redisai]
-        if self.queue_threads:
-            module.append(f"THREADS_PER_QUEUE {self.queue_threads}")
-        if self.inter_threads:
-            module.append(f"INTER_OP_PARALLELISM {self.inter_threads}")
-        if self.intra_threads:
-            module.append(f"INTRA_OP_PARALLELISM {self.intra_threads}")
-        return " ".join(module)
+        try:
+            module = ["--loadmodule", CONFIG.redisai]
+            if self.queue_threads:
+                module.append(f"THREADS_PER_QUEUE {self.queue_threads}")
+            if self.inter_threads:
+                module.append(f"INTER_OP_PARALLELISM {self.inter_threads}")
+            if self.intra_threads:
+                module.append(f"INTRA_OP_PARALLELISM {self.intra_threads}")
+            return " ".join(module)
+        except Exception as e:
+            print("Redis AI not found, proceeding without it.")
+            return ""
 
     @property
     def _redis_exe(self) -> str:
@@ -727,11 +731,16 @@ class Orchestrator(EntityList):
             "+ifname=" + ",".join(self._interfaces),  # pass interface to start script
             "+command",  # command flag for argparser
             self._redis_exe,  # redis-server
-            self._redis_conf,  # redis.conf file
-            self._rai_module,  # redisai.so
-            "--port",  # redis port
-            str(port),  # port number
+            self._redis_conf  # redis.conf file
         ]
+        if len(self._rai_module):
+            start_script_args += self._rai_module # redisai.so
+        start_script_args.extend(
+            [
+                "--port",  # redis port
+                str(port),  # port number
+            ]
+        )
         if cluster:
             start_script_args += self._get_cluster_args(name, port)
 
